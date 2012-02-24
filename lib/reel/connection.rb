@@ -21,6 +21,34 @@ module Reel
       
       @request = Request.new(@parser.http_method, @parser.url, @parser.http_version, @parser.headers)
     end
+
+    def run(app)
+      rack_input = Rack::RewindableInput.new(@socket)
+
+      env = {}
+      env["REQUEST_METHOD"] = @request.method.to_s.upcase
+      env["SERVER_NAME"] = "localhost"
+      env["SERVER_PORT"] = "1234"
+      env["QUERY_STRING"] = @parser.parser.query_string
+      env["rack.version"] = [1,4]
+      env["rack.input"] = rack_input
+      env["rack.errors"] = $stderr
+      env["rack.multithread"] = false
+      env["rack.multiprocess"] = false
+      env["rack.run_once"] = false
+      env["rack.url_scheme"] = "http"
+      env["SCRIPT_NAME"] = @request.url
+      env["PATH_INFO"] = ""
+
+      if env["SCRIPT_NAME"] == "/"
+        env["SCRIPT_NAME"] = ""
+        env["PATH_INFO"] = "/"
+      end
+
+      status, headers, body = app.call(env)
+
+      respond Reel::Response.new(status, headers, body)
+    end
     
     def respond(response, body = nil)
       case response

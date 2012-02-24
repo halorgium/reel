@@ -41,7 +41,9 @@ module Reel
     # Write the response out to the wire
     def render(socket)
       socket << render_header
-      socket << @body
+      @body.each do |chunk|
+        socket << chunk
+      end
     end
     
     #######

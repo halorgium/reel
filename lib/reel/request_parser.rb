@@ -1,7 +1,7 @@
 module Reel
   # Parses incoming HTTP requests
   class RequestParser
-    attr_reader :headers
+    attr_reader :headers, :parser
     
     def initialize
       @parser = Http::Parser.new(self)
@@ -39,6 +39,7 @@ module Reel
     end
     
     def on_body(chunk)
+      p [:body_chunk, chunk]
       # FIXME: handle request bodies
     end
 
